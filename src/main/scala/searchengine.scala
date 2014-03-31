@@ -1,5 +1,7 @@
+import java.io.File
 import java.lang.Long
 import org.apache.commons.dbcp.BasicDataSource
+import org.jsoup.Jsoup
 import org.skife.jdbi.v2.util.LongMapper
 import org.skife.jdbi.v2.{Handle, DBI}
 
@@ -50,13 +52,18 @@ class Crawler(var dbName:String) extends Db{
   def getEntryId(table:String, field:String, value:String, createNew:Boolean = true) : Long= {
       withTransaction{ handle =>
           var result:Long = handle.createQuery(s"SELECT rowid from $table where $field='$value'")
-                         .map(LongMapper.FIRST)
-                         .first()
+                                   .map(LongMapper.FIRST)
+                                   .first()
           if(createNew && result == null){
-            result = handle.createStatement(s"INSERT into $table($field) values ('$value')").executeAndReturnGeneratedKeys(LongMapper.FIRST).first()
+            result = handle.createStatement(s"INSERT into $table($field) values ('$value')")
+                           .executeAndReturnGeneratedKeys(LongMapper.FIRST).first()
           }
           return result
       }
+  }
+
+  def seperateWords(text:String) : Array[String] = {
+    text.split("\\W")
   }
 
 }

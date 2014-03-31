@@ -1,4 +1,6 @@
+import java.io.File
 import java.lang.Long
+import org.jsoup.Jsoup
 import org.junit.Assert._
 import org.junit.Test
 import org.skife.jdbi.v2.Handle
@@ -30,6 +32,20 @@ class SearchengineTest {
         h.execute("DELETE FROM WORDLIST WHERE WORD='rizvan'")
       }
     })
+  }
+
+  @Test
+  def testPage(){
+    val doc = Jsoup.parse(new File("corpus/articles/0/_/(/0_(number).html"), "UTF-8")
+    val text = doc.text()
+    assertNotNull(text)
+  }
+
+  @Test
+  def testSeparateWords(){
+    val crawler: Crawler = new Crawler("searchindex.db")
+    val result = crawler.seperateWords("hello world")
+    assertTrue(result.length == 2)
   }
 
 }
