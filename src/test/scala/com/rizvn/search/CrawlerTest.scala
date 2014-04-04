@@ -7,13 +7,9 @@ import org.junit.Assert._
 import org.junit.Test
 import org.skife.jdbi.v2.Handle
 import org.skife.jdbi.v2.tweak.HandleCallback
-import com.rizvn.search.Crawler
 
-/**
- * Created by riz on 26/03/2014.
- */
-class SearchengineTest {
 
+class CrawlerTest {
   @Test
   def dbiInitTest():Unit = {
     val crawler = new Crawler("searchindex.db")
@@ -36,13 +32,16 @@ class SearchengineTest {
       }
     })
   }
-
+  
+  /*
   @Test
   def testPage(){
     val doc = Jsoup.parse(new File("corpus/articles/0/_/(/0_(number).html"), "UTF-8")
     val text = doc.text()
     assertNotNull(text)
   }
+  * 
+  */
 
   @Test
   def testSeparateWords(){
@@ -50,5 +49,4 @@ class SearchengineTest {
     val result = crawler.seperateWords("hello world")
     assertTrue(result.length == 2)
   }
-
 }
