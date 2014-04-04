@@ -11,7 +11,7 @@ import org.skife.jdbi.v2.{Handle, DBI}
 class Crawler(var dbName:String) extends Db{
 
   def runQuery() : Long = {
-     withTransaction{ handle =>
+     withHandle{ handle =>
        handle.createQuery("SELECT Count(*) FROM URLLIST" )
              .map(LongMapper.FIRST)
              .first()
@@ -19,7 +19,7 @@ class Crawler(var dbName:String) extends Db{
   }
 
   def getEntryId(table:String, field:String, value:String, createNew:Boolean = true) : Long= {
-      withTransaction{ handle =>
+      withHandle{ handle =>{
           var result:Long = handle.createQuery(s"SELECT rowid from $table where $field='$value'")
                                    .map(LongMapper.FIRST)
                                    .first()
@@ -29,10 +29,28 @@ class Crawler(var dbName:String) extends Db{
           }
           return result
       }
+     }
   }
 
   def seperateWords(text:String) : Array[String] = {
     text.split("\\W")
+  }
+  
+  def isIndexed(url:String): Boolean = {
+    withHandle(handle => {
+      val result:Long = handle.createQuery(s"SELECT rowid from urllist where url = '$url'")
+                         .map(LongMapper.FIRST)
+                         .first()
+      
+      if(result != null){
+        val wordCount = handle.createQuery(s"SELECT COUNT(*) FROM wordlocation where urlid=$result")
+                           .map(LongMapper.FIRST)
+                           .first()
+        return wordCount != null
+      }
+
+      return false
+    })
   }
 
 }

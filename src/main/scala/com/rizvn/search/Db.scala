@@ -23,7 +23,7 @@ trait Db {
    * @tparam Obj  Generic type
    * @return  return type
    */
-  def withTransaction[Obj<: Object](f: (Handle) => Obj): Obj = {
+  def withHandle[Obj<: Object](f: (Handle) => Obj): Obj = {
     val h = getDbi().open()
     try{
       val result = f(h)
