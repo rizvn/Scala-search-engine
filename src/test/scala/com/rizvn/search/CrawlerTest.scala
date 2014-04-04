@@ -10,10 +10,12 @@ import org.skife.jdbi.v2.tweak.HandleCallback
 
 
 class CrawlerTest {
+  
+  val crawler = new Crawler("searchindex.db")
+  
   @Test
   def dbiInitTest():Unit = {
-    val crawler = new Crawler("searchindex.db")
-    val dbi = crawler.getDbi
+    val dbi = this.crawler.getDbi
     assertNotNull(dbi)
 
     val count:Long = crawler.runQuery()
@@ -22,8 +24,7 @@ class CrawlerTest {
 
   @Test
   def getEntryIdTest() = {
-     val crawler: Crawler = new Crawler("searchindex.db")
-     val result = crawler.getEntryId("wordlist", "word", "rizvan")
+     val result = this.crawler.getEntryId("wordlist", "word", "rizvan")
      assertTrue(result> 0)
 
     crawler.getDbi.withHandle(new HandleCallback[Unit] {
@@ -41,11 +42,11 @@ class CrawlerTest {
     assertNotNull(text)
   }
   * 
+  * 
   */
 
   @Test
   def testSeparateWords(){
-    val crawler: Crawler = new Crawler("searchindex.db")
     val result = crawler.seperateWords("hello world")
     assertTrue(result.length == 2)
   }
