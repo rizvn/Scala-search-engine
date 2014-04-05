@@ -14,15 +14,6 @@ class CrawlerTest {
   val crawler = new Crawler("searchindex.db")
   
   @Test
-  def dbiInitTest():Unit = {
-    val dbi = this.crawler.getDbi
-    assertNotNull(dbi)
-
-    val count:Long = crawler.runQuery()
-    assertTrue(count > 0 )
-  }
-
-  @Test
   def getEntryIdTest() = {
      val result = this.crawler.getEntryId("wordlist", "word", "rizvan")
      assertTrue(result> 0)
@@ -47,7 +38,7 @@ class CrawlerTest {
 
   @Test
   def testSeparateWords(){
-    val result = crawler.seperateWords("hello world")
+    val result = crawler.seperateWords("hello world in") //'in' will be ignored
     assertTrue(result.length == 2)
   }
 }
