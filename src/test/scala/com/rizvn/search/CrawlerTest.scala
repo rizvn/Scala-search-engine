@@ -7,6 +7,8 @@ import org.junit.Assert._
 import org.junit.Test
 import org.skife.jdbi.v2.Handle
 import org.skife.jdbi.v2.tweak.HandleCallback
+import scala.collection.mutable
+import org.jsoup.nodes.Element
 
 
 class CrawlerTest {
@@ -25,20 +27,21 @@ class CrawlerTest {
     })
   }
   
-  /*
   @Test
-  def testPage(){
-    val doc = Jsoup.parse(new File("corpus/articles/0/_/(/0_(number).html"), "UTF-8")
-    val text = doc.text()
-    assertNotNull(text)
+  def testGetPageLinks(){
+    val result = crawler.getPageLinks("http://localhost:8888/wiki")
+    assertTrue(result.size == 5642)
   }
-  * 
-  * 
-  */
 
   @Test
   def testSeparateWords(){
     val result = crawler.seperateWords("hello world in") //'in' will be ignored
     assertTrue(result.length == 2)
+  }
+
+  @Test
+  def testCreateSchema(){
+    val newCrawler = new Crawler("newIndex.db");
+    newCrawler.createSchema()
   }
 }

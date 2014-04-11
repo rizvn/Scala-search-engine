@@ -5,8 +5,9 @@ import org.apache.commons.dbcp.BasicDataSource
 import org.skife.jdbi.v2.util.LongMapper
 import org.skife.jdbi.v2.{Handle, DBI}
 import org.jsoup.Jsoup
-import java.io.File
 import org.jsoup.nodes.Document
+import scala.collection.mutable
+import scala.collection.JavaConversions._
 
 /**
  * @param dbName  will be automatically be assigned to dbName var in Db Trait
@@ -70,12 +71,44 @@ class Crawler(var dbName:String) extends Db{
     }
   }
 
-  def crawl() = {
-    //TODO: implement
+  def getPageLinks(page:String) : Seq[String] = {
+    val doc = Jsoup.connect(page).get()
+    val links = doc.select("a")
+
+    val urls = new mutable.MutableList[String]()
+
+    for (a <- links){
+      urls += a.attr("abs:href")
+    }
+    urls.toIndexedSeq
+  }
+
+  def crawl(pages:Set[String]) = {
+    pages.foreach(url => {
+      //extract links and add to new pages
+
+      //start up mamp to start indexing wiki pages in the mamp wiki dir
+
+
+      //index page
+    })
   }
   
-  def createIndexTable() = {
-    //TODO: implement
+  def createSchema() = {
+    withHandle(h =>{
+      h.execute("create table urllist(url)")
+      h.execute("create table urllist(url)")
+      h.execute("create table wordlist(word)")
+      h.execute("create table wordlocation(urlid,wordid,location)")
+      h.execute("create table link(fromid integer,toid integer)")
+      h.execute("create table linkwords(wordid,linkid)")
+      h.execute("create index wordidx on wordlist(word)")
+      h.execute("create index urlidx on urllist(url)")
+      h.execute("create index wordurlidx on wordlocation(wordid)")
+      h.execute("create index urltoidx on link(toid)")
+      h.execute("create index urlfromidx on link(fromid)")
+      None
+    })
   }
 
 }
