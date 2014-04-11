@@ -32,7 +32,7 @@ class Crawler(var dbName:String) extends Db{
    * @param text some text
    * @return array of words excluding ones from ignoreword
    */
-  def seperateWords(text:String, ignoreWords:Set[String]= Set("the","of", "to", "and", "a", "in", "is", "it")) : Array[String] = {
+  def seperateWords(text:String, ignoreWords:Set[String]= Set("the","of", " ", "to", "and", "a", "in", "is", "it")) : Array[String] = {
     text.split("\\W").filter( !ignoreWords.contains(_) )
   }
 
@@ -65,6 +65,7 @@ class Crawler(var dbName:String) extends Db{
     for((word, index) <- words.zipWithIndex ){ //zip with index will get array and create tuples ("word1", 0), ("word2", 1) then we loop through each tuple in turn
       withHandle(handle =>{
         val wordId = getEntryId("wordList", "word", word)
+        //println(s"Word $word $wordId $index")
         handle.execute(s"INSERT INTO wordLocation(urlid, wordid, location) values('$urlId', '$wordId', '$index')")
         None //because with handle expects a return value
       })
@@ -83,20 +84,14 @@ class Crawler(var dbName:String) extends Db{
     urls.toIndexedSeq
   }
 
-  def crawl(pages:Set[String]) = {
+  def crawl(pages:Seq[String]) = {
     pages.foreach(url => {
-      //extract links and add to new pages
-
-      //start up mamp to start indexing wiki pages in the mamp wiki dir
-
-
-      //index page
+      addToIndex(url, Jsoup.connect(url).get())
     })
   }
   
   def createSchema() = {
     withHandle(h =>{
-      h.execute("create table urllist(url)")
       h.execute("create table urllist(url)")
       h.execute("create table wordlist(word)")
       h.execute("create table wordlocation(urlid,wordid,location)")

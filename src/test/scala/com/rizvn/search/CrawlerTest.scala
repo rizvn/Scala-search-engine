@@ -43,5 +43,7 @@ class CrawlerTest {
   def testCreateSchema(){
     val newCrawler = new Crawler("newIndex.db");
     newCrawler.createSchema()
+    val pages = crawler.getPageLinks("http://localhost:8888/wiki")
+    crawler.crawl(pages)
   }
 }
