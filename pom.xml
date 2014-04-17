@@ -15,6 +15,14 @@
       <scala.tools.version>2.10</scala.tools.version>
       <scala.version>2.10.3</scala.version>
     </properties>
+    
+    <repositories>
+    	<repository>
+    		<id>Sonatype releases</id>
+    		<name>Sonatype releases</name>
+    		<url>https://oss.sonatype.org/content/repositories/releases/</url>
+    	</repository>
+    </repositories>
 
     <dependencies>
         <dependency>
@@ -24,15 +32,15 @@
         </dependency>
 
         <dependency>
-            <groupId>org.xerial</groupId>
-            <artifactId>sqlite-jdbc</artifactId>
-            <version>3.7.15-M1</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.jdbi</groupId>
             <artifactId>jdbi</artifactId>
             <version>2.53</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>2.3.2</version>
         </dependency>
 
         <dependency>

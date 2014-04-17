@@ -10,38 +10,35 @@ import scala.collection.mutable
 import scala.collection.JavaConversions._
 
 /**
- * @param dbName  will be automatically be assigned to dbName var in Db Trait
+ * @param dbUrl  will be automatically be assigned to dbName var in Db Trait
  */
-class Crawler(var dbName:String) extends Db{
+class Indexer{
 
-  def getEntryId(table:String, field:String, value:String, createNew:Boolean = true) : Long= {
-      withHandle(handle =>{
-          var result:Long = handle.createQuery(s"SELECT rowid from $table where $field='$value'")
-                                   .map(LongMapper.FIRST)
-                                   .first()
-          if(createNew && result == null){
-            result = handle.createStatement(s"INSERT into $table($field) values ('$value')")
-                           .executeAndReturnGeneratedKeys(LongMapper.FIRST).first()
+  val database = Database(driver = "org.hsqldb.jdbc.JDBCDriver", url = "jdbc:hsqldb:mem:mymemdb")
+
+  def getOrCreateEntryId(table:String, field:String, value:String) : Long = {
+      database.withHandle(h =>{
+          val result = Option(h.createQuery(s"SELECT rowid from $table where $field='$value'")
+                             .map(LongMapper.FIRST).first)
+
+          result match{
+            case Some(value) => value
+            case None => h.createStatement(s"INSERT into $table($field) values ('$value')")
+                          .executeAndReturnGeneratedKeys(LongMapper.FIRST).first()
           }
-          return result
       })
   }
 
-  /**
-   * Separate words and remove ones in ignored words set
-   * @param text some text
-   * @return array of words excluding ones from ignoreword
-   */
+
   def seperateWords(text:String, ignoreWords:Set[String]= Set("the","of", " ", "to", "and", "a", "in", "is", "it")) : Array[String] = {
     text.split("\\W").filter( !ignoreWords.contains(_) )
   }
 
   def isIndexed(url:String): Boolean = {
-    withHandle(handle => {
+    database.withHandle(handle => {
       //check url exists
       val result:Long = handle.createQuery(s"SELECT rowid from urllist where url = '$url'")
-                         .map(LongMapper.FIRST)
-                         .first()
+                         .map(LongMapper.FIRST).first
       if(result != null){
         //url exists then check if any words are mapped to this url
         val wordCount = handle.createQuery(s"SELECT COUNT(*) FROM wordlocation where urlid=$result")
@@ -53,6 +50,17 @@ class Crawler(var dbName:String) extends Db{
     })
   }
 
+  def getTextOnly(doc: Document) : String = {
+    val sb = new mutable.StringBuilder()
+    for(element <- doc.getAllElements()){
+      val text = element.text();
+      if(text.size > 1 ){
+        sb.append(text.toLowerCase.trim)
+      }
+    }
+    sb.toString()
+  }
+
   def addToIndex(url:String, page:Document):Unit = {
     if(isIndexed(url)) return;
 
@@ -60,11 +68,12 @@ class Crawler(var dbName:String) extends Db{
     val pageText = page.text()
     val words = seperateWords(pageText)
 
-    val urlId = getEntryId("urllist", "url", url)
+    val urlId = getOrCreateEntryId("urllist", "url", url)
 
-    for((word, index) <- words.zipWithIndex ){ //zip with index will get array and create tuples ("word1", 0), ("word2", 1) then we loop through each tuple in turn
-      withHandle(handle =>{
-        val wordId = getEntryId("wordList", "word", word)
+    var i = 0;
+    for((word, index) <- words.view.zipWithIndex ){ //zip with index will get array and create tuples ("word1", 0), ("word2", 1) then we loop through each tuple in turn
+      database.withHandle(handle =>{
+        val wordId = getOrCreateEntryId("wordList", "word", word)
         //println(s"Word $word $wordId $index")
         handle.execute(s"INSERT INTO wordLocation(urlid, wordid, location) values('$urlId', '$wordId', '$index')")
         None //because with handle expects a return value
@@ -86,22 +95,18 @@ class Crawler(var dbName:String) extends Db{
 
   def crawl(pages:Seq[String]) = {
     pages.foreach(url => {
+      //TODO: add page exists check here
+
       addToIndex(url, Jsoup.connect(url).get())
     })
   }
   
   def createSchema() = {
-    withHandle(h =>{
-      h.execute("create table urllist(url)")
-      h.execute("create table wordlist(word)")
-      h.execute("create table wordlocation(urlid,wordid,location)")
-      h.execute("create table link(fromid integer,toid integer)")
-      h.execute("create table linkwords(wordid,linkid)")
-      h.execute("create index wordidx on wordlist(word)")
-      h.execute("create index urlidx on urllist(url)")
-      h.execute("create index wordurlidx on wordlocation(wordid)")
-      h.execute("create index urltoidx on link(toid)")
-      h.execute("create index urlfromidx on link(fromid)")
+    database.withHandle(h =>{
+      h.execute("create table URLLIST(ID IDENTITY, URL VARCHAR)")
+      h.execute("create table WORDLIST(ID IDENTITY, WORD VARCHAR)")
+      h.execute("create table WORD_LOCATION(ID IDENTITY, WORDID NUMERIC, LOCATION NUMERIC)")
+      h.execute("create table URLWORDS(URLID NUMERIC, WORDID NUMERIC)")
       None
     })
   }

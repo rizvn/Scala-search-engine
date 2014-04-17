@@ -9,18 +9,19 @@ import org.skife.jdbi.v2.Handle
 import org.skife.jdbi.v2.tweak.HandleCallback
 import scala.collection.mutable
 import org.jsoup.nodes.Element
+import java.util.Date
 
 
-class CrawlerTest {
+class IndexerTest {
   
-  val crawler = new Crawler("searchindex.db")
+  val crawler = new Indexer()
   
   @Test
   def getEntryIdTest() = {
-     val result = this.crawler.getEntryId("wordlist", "word", "rizvan")
+     val result = this.crawler.getOrCreateEntryId("wordlist", "word", "rizvan")
      assertTrue(result> 0)
 
-    crawler.getDbi.withHandle(new HandleCallback[Unit] {
+    crawler.database.dbi.withHandle(new HandleCallback[Unit] {
       def withHandle(h: Handle): Unit = {
         h.execute("DELETE FROM WORDLIST WHERE WORD='rizvan'")
       }
@@ -34,6 +35,13 @@ class CrawlerTest {
   }
 
   @Test
+  def testGetTextOnly(){
+    val doc = Jsoup.parse(new File(""), "UTF-8")
+    val result = crawler.getTextOnly(doc)
+    assertNotNull(result)
+  }
+
+  @Test
   def testSeparateWords(){
     val result = crawler.seperateWords("hello world in") //'in' will be ignored
     assertTrue(result.length == 2)
@@ -41,9 +49,7 @@ class CrawlerTest {
 
   @Test
   def testCreateSchema(){
-    val newCrawler = new Crawler("newIndex.db");
-    newCrawler.createSchema()
-    val pages = crawler.getPageLinks("http://localhost:8888/wiki")
-    crawler.crawl(pages)
+
   }
+
 }
