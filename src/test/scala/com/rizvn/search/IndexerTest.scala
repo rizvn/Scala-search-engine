@@ -14,14 +14,14 @@ import java.util.Date
 
 class IndexerTest {
   
-  val crawler = new Indexer()
+  val indexer = new Indexer()
   
   @Test
   def getEntryIdTest() = {
-     val result = this.crawler.getOrCreateEntryId("wordlist", "word", "rizvan")
+     val result = this.indexer.getOrCreateEntryId("wordlist", "word", "rizvan")
      assertTrue(result> 0)
 
-    crawler.database.dbi.withHandle(new HandleCallback[Unit] {
+    indexer.database.dbi.withHandle(new HandleCallback[Unit] {
       def withHandle(h: Handle): Unit = {
         h.execute("DELETE FROM WORDLIST WHERE WORD='rizvan'")
       }
@@ -30,26 +30,20 @@ class IndexerTest {
   
   @Test
   def testGetPageLinks(){
-    val result = crawler.getPageLinks("http://localhost:8888/wiki")
+    val result = indexer.getPageLinks("http://localhost:8888/wiki")
     assertTrue(result.size == 5642)
   }
 
-  @Test
-  def testGetTextOnly(){
-    val doc = Jsoup.parse(new File(""), "UTF-8")
-    val result = crawler.getTextOnly(doc)
-    assertNotNull(result)
-  }
 
   @Test
   def testSeparateWords(){
-    val result = crawler.seperateWords("hello world in") //'in' will be ignored
+    val result = indexer.seperateWords("hello world in") //'in' will be ignored
     assertTrue(result.length == 2)
   }
 
   @Test
   def testCreateSchema(){
-
+    indexer.createSchema()
   }
 
 }

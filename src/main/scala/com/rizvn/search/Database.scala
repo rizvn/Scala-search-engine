@@ -13,7 +13,7 @@ case class Database(driver:String, url:String) {
     new DBI(ds)
   }
 
-  def withHandle[Obj<: Object](f: (Handle) => Obj): Obj = {
+  def withHandle[T](f: (Handle) => T): T = {
     val h = dbi.open()
     try{
       val result = f(h)
