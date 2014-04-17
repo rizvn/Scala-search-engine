@@ -43,7 +43,7 @@ class Indexer{
   }
 
   def addToIndex(url:String, page:Document):Unit = {
-    if(isIndexed(url)){ println(s"Already indexed $url"); return; }
+    if(isIndexed(url)){ println(s"Already indexed: $url"); return; }
 
     println(s"Indexing: $url")
     val pageText = page.text()
