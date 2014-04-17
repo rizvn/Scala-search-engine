@@ -8,6 +8,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import scala.collection.mutable
 import scala.collection.JavaConversions._
+import java.io.File
 
 /**
  * @param dbUrl  will be automatically be assigned to dbName var in Db Trait
@@ -42,38 +43,33 @@ class Indexer{
   }
 
   def addToIndex(url:String, page:Document):Unit = {
-    if(isIndexed(url)) return;
+    if(isIndexed(url)){ println(s"Already indexed $url"); return; }
 
-    println(s"Indexing url: $url")
+    println(s"Indexing: $url")
     val pageText = page.text()
     val words = seperateWords(pageText)
 
     val urlId = getOrCreateEntryId("urllist", "url", url)
 
-    for((word, index) <- words.view.zipWithIndex ){ //zip with index will get array and create tuples ("word1", 0), ("word2", 1) then we loop through each tuple in turn
+    for((word, index) <- words.view.zipWithIndex){ //zip with index will get array and create tuples ("word1", 0), ("word2", 1) then we loop through each tuple in turn
       database.withHandle(handle =>{
         val wordId = getOrCreateEntryId("wordList", "word", word)
         //println(s"Word $word $wordId $index")
-        handle.execute(s"INSERT INTO wordLocation(urlid, wordid, location) values('$urlId', '$wordId', '$index')")
+        handle.execute(s"INSERT INTO WORDLOCATION(urlid, wordid, location) values('$urlId', '$wordId', '$index')")
       })
     }
   }
 
-  def getPageLinks(page:String) : Seq[String] = {
-    val doc = Jsoup.connect(page).get()
-    val links = doc.select("a")
-
-    val urls = new mutable.MutableList[String]()
-
-    for (a <- links){
-      urls += a.attr("abs:href")
-    }
-    urls.toIndexedSeq
+  def getFilesInDir(dir:String) : Seq[String]= {
+    val folder = new File(dir)
+    val fileList = mutable.MutableList[String]()
+    folder.listFiles().foreach(fileList += _.getAbsolutePath)
+    fileList.toSeq
   }
 
   def startIndexing(pages:Seq[String]) = {
     pages.foreach(url => {
-      addToIndex(url, Jsoup.connect(url).get())
+      addToIndex(url, Jsoup.parse(new File(url), "UTF-8"))
     })
   }
   
@@ -82,6 +78,7 @@ class Indexer{
       h.execute("create table URLLIST(ID IDENTITY, URL VARCHAR(255))")
       h.execute("create table WORDLIST(ID IDENTITY, WORD VARCHAR(255))")
       h.execute("create table WORDLOCATION(URLID NUMERIC, WORDID NUMERIC, LOCATION NUMERIC)")
+      h.commit()
     })
   }
 

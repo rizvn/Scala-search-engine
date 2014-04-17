@@ -27,11 +27,11 @@ class IndexerTest {
       }
     })
   }
-  
+
   @Test
-  def testGetPageLinks(){
-    val result = indexer.getPageLinks("http://localhost:8888/wiki")
-    assertTrue(result.size == 5642)
+  def testGetFilesInDir(){
+    val files = indexer.getFilesInDir("wiki")
+    assertTrue(files.size == 5641)
   }
 
 
@@ -44,6 +44,13 @@ class IndexerTest {
   @Test
   def testCreateSchema(){
     indexer.createSchema()
+  }
+
+  @Test
+  def testIndex(){
+    //indexer.createSchema()
+    val files = indexer.getFilesInDir("wiki")
+    indexer.startIndexing(files)
   }
 
 }
