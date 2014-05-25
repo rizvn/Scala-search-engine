@@ -11,11 +11,11 @@ import scala.collection.JavaConversions._
 import java.io.File
 
 /**
- * @param dbUrl  will be automatically be assigned to dbName var in Db Trait
+ * @author Riz
  */
 class Indexer{
 
-  val database = Database(driver = "org.hsqldb.jdbc.JDBCDriver", url = "jdbc:hsqldb:file:db/searchIndex")
+  val database = Database(driver = "com.mysql.jdbc.Driver", url = "jdbc:mysql://localhost:8889/search_engine", user = "root", pass="root")
 
   def getOrCreateEntryId(table:String, field:String, value:String) : Long = {
     database.withHandle(h =>{

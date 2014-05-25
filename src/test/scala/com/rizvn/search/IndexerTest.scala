@@ -5,13 +5,16 @@ import java.lang.Long
 import org.jsoup.Jsoup
 import org.junit.Assert._
 import org.junit.Test
-import org.skife.jdbi.v2.Handle
+import org.skife.jdbi.v2.{DBI, Handle}
 import org.skife.jdbi.v2.tweak.HandleCallback
 import scala.collection.mutable
 import org.jsoup.nodes.Element
 import java.util.Date
+import org.apache.commons.dbcp.BasicDataSource
 
-
+/**
+ * @author Riz
+ */
 class IndexerTest {
   
   val indexer = new Indexer()
@@ -34,7 +37,6 @@ class IndexerTest {
     assertTrue(files.size == 5641)
   }
 
-
   @Test
   def testSeparateWords(){
     val result = indexer.seperateWords("hello world in") //'in' will be ignored
@@ -52,5 +54,7 @@ class IndexerTest {
     val files = indexer.getFilesInDir("wiki")
     indexer.startIndexing(files)
   }
+
+
 
 }
